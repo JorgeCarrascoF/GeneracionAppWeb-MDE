@@ -1,0 +1,13 @@
+[module generate('http://example.org/DataWeb')]
+[import dmss::dataweb::acceleo::main::generateWeb/]
+[import dmss::dataweb::acceleo::main::generateDesktop/]
+[import dmss::dataweb::acceleo::main::generateDatabase/]
+[import dmss::dataweb::acceleo::main::generateDAO/]
+
+[template public generateAplicacion(anAplicacion : Aplicacion)]
+[comment @main/]
+	[generateWebApp(anAplicacion)/]
+	[generateDesktopApp(anAplicacion)/]
+	[generateDatabase(anAplicacion)/]
+	[generateDAO(anAplicacion)/]
+[/template]

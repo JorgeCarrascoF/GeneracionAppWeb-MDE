@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DataWeb:Aplicacion
+    xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:DataWeb="http://example.org/DataWeb"
+    idApp="libreria"
+    nombre="Libreria">
+  <paginas xsi:type="DataWeb:PaginaDetalle"
+      idPagina="ver_libro"
+      nombrePagina="Ver libro"
+      enlacerrss="//@enlaces.0"
+      enlacesPaginas="ver_ultimos_libros ver_autor"
+      entidad="libro">
+    <enlacesPaginasExternas>www.casadellibro.com</enlacesPaginasExternas>
+  </paginas>
+  <paginas xsi:type="DataWeb:PaginaBorrado"
+      idPagina="borrar_libro"
+      nombrePagina="Borrar Libro"
+      entidad="libro"/>
+  <paginas xsi:type="DataWeb:PaginaCreacion"
+      idPagina="crear_libro"
+      nombrePagina="Crear libro"
+      entidad="libro"/>
+  <paginas xsi:type="DataWeb:PaginaIndice"
+      idPagina="ver_autores"
+      nombrePagina="Ver autores"
+      entidad="autor"/>
+  <paginas xsi:type="DataWeb:PaginaIndiceExtendido"
+      idPagina="ver_ultimos_libros"
+      nombrePagina="Ver ultimos libros de la biblioteca"
+      entidad="libro"
+      atributosAMostrar="//@entidades.0/@atributos.3 //@entidades.0/@atributos.1"
+      instanciasPorPagina="5"
+      atributoFiltro="//@entidades.0/@atributos.1"/>
+  <paginas xsi:type="DataWeb:PaginaIndiceDetalle"
+      idPagina="ver_autores_en_detalle"
+      nombrePagina="Ver autores en detalle"
+      enlacesPaginas="ver_autores"
+      entidad="autor"
+      atributosAMostrar="//@entidades.1/@atributos.0 //@entidades.1/@atributos.1"/>
+  <paginas xsi:type="DataWeb:PaginaDetalle"
+      idPagina="ver_autor"
+      nombrePagina="Ver autor"
+      enlacerrss="//@enlaces.0"
+      entidad="autor"/>
+  <paginas xsi:type="DataWeb:PaginaInicio"
+      idPagina="pagina_inicio"
+      nombrePagina="Inicio"
+      enlacerrss="//@enlaces.0"/>
+  <paginas xsi:type="DataWeb:PaginaEncuestaCuestionario"
+      idPagina="encuesta_satisfaccion"
+      nombrePagina="Encuesta de satisfacción">
+    <preguntas
+        enunciado="¿Qué libros has sacado de la biblioteca en los últimos días?"
+        tipo="RESPUESTA_CORTA"
+        respuestaCorrecta=""/>
+    <preguntas
+        enunciado="¿Cuál es tu género de libros más leído?"
+        tipo="SELECCION">
+      <opciones>Ciencia Ficcion</opciones>
+      <opciones>Historia</opciones>
+      <opciones>Programacion</opciones>
+    </preguntas>
+    <preguntas
+        enunciado="¿Das permiso a la biblioteca para mandarte emails con nuevas adquisiciones?"/>
+  </paginas>
+  <paginas xsi:type="DataWeb:PaginaResultados"
+      idPagina="resultados_simulacro_examen"
+      nombrePagina="Resultados del simulacro de examen"
+      paginaencuestacuestionario="simulacro_examen"/>
+  <paginas xsi:type="DataWeb:PaginaEncuestaCuestionario"
+      idPagina="simulacro_examen"
+      nombrePagina="Simulacro Examen de Programacion"
+      enlacesPaginas="pagina_inicio"
+      esCuestionario="true">
+    <preguntas
+        enunciado="¿Qué tipo utilizarias para almacenar la edad de una persona?"
+        tipo="SELECCION"
+        respuestaCorrecta="Integer">
+      <opciones>Integer</opciones>
+      <opciones>Boolean</opciones>
+      <opciones>String</opciones>
+      <opciones>Date</opciones>
+    </preguntas>
+    <preguntas
+        enunciado="¿Qué palabra reservada en Java se utiliza para heredar de una clase?"
+        tipo="RESPUESTA_CORTA"
+        respuestaCorrecta="extends"/>
+    <preguntas
+        enunciado="¿las listas en Python son estructuras inmutables?"
+        respuestaCorrecta="falso"/>
+  </paginas>
+  <paginas xsi:type="DataWeb:PaginaResultados"
+      idPagina="resultados_encuesta_satisfaccion"
+      nombrePagina="Resultados de la encuesta de satisfaccion"
+      paginaencuestacuestionario="encuesta_satisfaccion"/>
+  <entidades
+      idEntidad="libro"
+      nombre="Libro"
+      paginas="ver_libro borrar_libro crear_libro ver_ultimos_libros"
+      referencias="autor">
+    <atributos
+        nombre="ISBN"
+        tipo="STRING"/>
+    <atributos
+        nombre="FechaSalida"
+        tipo="STRING"/>
+    <atributos
+        nombre="copias"/>
+    <atributos
+        nombre="titulo"
+        tipo="STRING"/>
+  </entidades>
+  <entidades
+      idEntidad="autor"
+      nombre="Autor"
+      paginas="ver_autores ver_autores_en_detalle ver_autor">
+    <atributos
+        nombre="nombre"
+        tipo="STRING"/>
+    <atributos
+        nombre="localidad"
+        tipo="STRING"/>
+  </entidades>
+  <roles nombre="Empleado"
+      paginasAccesibles="crear_libro borrar_libro ver_libro"/>
+  <roles nombre="Usuario"
+      paginasAccesibles="ver_ultimos_libros ver_libro ver_autores ver_autores_en_detalle encuesta_satisfaccion simulacro_examen"/>
+  <enlaces nombre="Twitter de la biblioteca"
+      enlace="www.twitter.com"/>
+</DataWeb:Aplicacion>

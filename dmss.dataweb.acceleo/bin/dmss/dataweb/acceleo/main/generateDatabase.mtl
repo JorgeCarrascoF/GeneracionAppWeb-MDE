@@ -1,0 +1,51 @@
+[module generateDatabase('http://example.org/DataWeb')]
+
+
+
+[template public generateDatabase(aplicacion : Aplicacion)]
+[file(aplicacion.nombre.concat('/database/create_tables.sql'), false, 'UTF-8')]
+	CREATE DATABASE [aplicacion.nombre/]Database;
+
+	USE [aplicacion.nombre/]Database;
+	
+	[comment solo hace falta crear tablas para las entidades, cada una con sus atributos /]
+	[for (entidad : Entidad | aplicacion.entidades)]
+		CREATE TABLE [entidad.nombre/] (
+			id_[entidad.nombre/] VARCHAR(30) PRIMARY KEY,
+			[let numeroAtributos : Integer = entidad.atributos->size()]
+				[for(i : Integer | Sequence{1..numeroAtributos})]
+				[let atributo : Atributo = entidad.atributos->at(i)]
+			[atributo.nombre/] [if(atributo.tipo = TipoDato::STRING)]VARCHAR(255)[else][atributo.tipo/][/if][if(i <> numeroAtributos or entidad.referencias->size() > 0)],[/if]
+				[/let]
+				[/for]
+			[/let]
+	[comment Añadir referencias como claves foráneas /]
+			[let numeroReferencias : Integer = entidad.referencias->size()]
+				[for(i : Integer | Sequence{1..numeroReferencias})]
+				[let nombreEntidadReferencia : String = entidad.referencias->at(i).nombre]
+			id_[nombreEntidadReferencia/] VARCHAR(30),
+			FOREIGN KEY (id_[nombreEntidadReferencia/]) REFERENCES [nombreEntidadReferencia/](id_[nombreEntidadReferencia/])[if(i <> numeroReferencias)],[/if]
+				[/let]	
+				[/for]
+			[/let]
+
+
+		);
+	[/for]
+
+	[comment También es necesario crear tablas para las cuestionarios, en las que se guardarán enteros con las cantidad de veces que se ha acertado cada opcion de una pregunta /]
+		CREATE TABLE Cuestionario(
+			id_cuestionario VARCHAR(30) PRIMARY KEY
+		);
+
+		CREATE TABLE PreguntaCuestionario(
+			id_pregunta VARCHAR(30) PRIMARY KEY,
+			id_cuestionario VARCHAR(30),
+			totalRespuestas INT DEFAULT 0,
+			respuestasCorrectas INT DEFAULT 0,
+			FOREIGN KEY (id_cuestionario) REFERENCES Cuestionario(id_cuestionario)
+		);
+	
+
+[/file]
+[/template]

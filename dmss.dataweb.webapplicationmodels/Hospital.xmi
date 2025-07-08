@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DataWeb:Aplicacion
+    xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:DataWeb="http://example.org/DataWeb"
+    idApp="hospital_central"
+    nombre="Hospital Central">
+  <paginas xsi:type="DataWeb:PaginaCRUDUnica"
+      idPagina="crud_paciente"
+      nombrePagina="PaginaCRUDPaciente"
+      entidad="paciente"/>
+  <paginas xsi:type="DataWeb:PaginaIndice"
+      idPagina="indice_medicos"
+      nombrePagina="Ver medicos"
+      entidad="medico"
+      atributosAMostrar="//@entidades.1/@atributos.0 //@entidades.1/@atributos.1">
+    <enlacesPaginasExternas>https://saludextremadura.ses.es/web/</enlacesPaginasExternas>
+  </paginas>
+  <paginas xsi:type="DataWeb:PaginaDetalle"
+      idPagina="ver_medico"
+      nombrePagina="Ver medico"
+      enlacesPaginas="indice_medicos"
+      entidad="medico"/>
+  <paginas xsi:type="DataWeb:PaginaInicio"
+      idPagina="inicio"
+      nombrePagina="Pagina Inicio del Hospital"
+      enlacerrss="//@enlaces.0"/>
+  <paginas xsi:type="DataWeb:PaginaEncuestaCuestionario"
+      idPagina="encuesta_satisfaccion"
+      nombrePagina="Encuesta de satisfaccion del usuario"
+      enlacerrss="//@enlaces.0">
+    <preguntas
+        enunciado="¿Ha sido atendido en las ultimas 24h por nuestro hospital?"/>
+    <preguntas
+        enunciado="Del 1 al 10, ¿cuál es su nivel de satisfacción?"
+        tipo="RESPUESTA_CORTA"
+        respuestaCorrecta="">
+      <opciones>1-3</opciones>
+      <opciones>4-6</opciones>
+      <opciones>7-10</opciones>
+    </preguntas>
+    <preguntas
+        enunciado="Por favor, deje algún comentario de mejora:"
+        tipo="RESPUESTA_CORTA"/>
+  </paginas>
+  <paginas xsi:type="DataWeb:PaginaEncuestaCuestionario"
+      idPagina="cuestionario_medico"
+      nombrePagina="Cuestionario sobre medicamentos"
+      enlacerrss="//@enlaces.0"
+      esCuestionario="true">
+    <preguntas
+        enunciado="¿Los antibióticos son efectivos contra infecciones virales?"
+        respuestaCorrecta="Falso"/>
+    <preguntas
+        enunciado="¿Cuál de los siguientes medicamentos es un analgésico?"
+        tipo="SELECCION"
+        respuestaCorrecta="Ibuprofeno">
+      <opciones>Amoxicilina</opciones>
+      <opciones>Omeprazol</opciones>
+      <opciones>Ibuprofeno</opciones>
+    </preguntas>
+    <preguntas
+        enunciado="¿Cuál es el nombre genérico del Advil?"
+        tipo="RESPUESTA_CORTA"
+        respuestaCorrecta="Ibuprofeno"/>
+  </paginas>
+  <paginas xsi:type="DataWeb:PaginaResultados"
+      idPagina="resultado_cuestionario"
+      nombrePagina="Resultados del cuestionario medico"
+      enlacerrss="//@enlaces.0"
+      paginaencuestacuestionario="cuestionario_medico"/>
+  <paginas xsi:type="DataWeb:PaginaResultados"
+      idPagina="resultados_encuesta"
+      nombrePagina="Resultados encuesta satisfaccion"
+      paginaencuestacuestionario="encuesta_satisfaccion"/>
+  <entidades
+      idEntidad="paciente"
+      nombre="Paciente"
+      paginas="crud_paciente"
+      referencias="medico">
+    <atributos
+        nombre="nombre"
+        tipo="STRING"/>
+    <atributos
+        nombre="edad"/>
+    <atributos
+        nombre="fechaIngreso"
+        tipo="STRING"/>
+    <atributos
+        nombre="enTratamiento"
+        tipo="BOOLEAN"/>
+  </entidades>
+  <entidades
+      idEntidad="medico"
+      nombre="Medico"
+      paginas="ver_medico indice_medicos">
+    <atributos
+        nombre="nombre"
+        tipo="STRING"/>
+    <atributos
+        nombre="fechaIngreso"
+        tipo="STRING"/>
+    <atributos
+        nombre="nomina"/>
+  </entidades>
+  <roles nombre="Invitado"
+      paginasAccesibles="encuesta_satisfaccion cuestionario_medico"/>
+  <roles nombre="Medico"/>
+  <enlaces nombre="Cómo leer un prospecto"
+      enlace="https://www.salud.mapfre.es/enfermedades/reportajes-enfermedades/prospecto-de-un-medicamento-como-entenderlo/"/>
+</DataWeb:Aplicacion>

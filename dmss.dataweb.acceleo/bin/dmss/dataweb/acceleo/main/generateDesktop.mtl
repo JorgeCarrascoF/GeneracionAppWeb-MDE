@@ -1,0 +1,1466 @@
+[module generateDesktop('http://example.org/DataWeb')]
+
+[template public generateDesktopApp(anAplicacion : Aplicacion)]
+	[generateAllClasses(anAplicacion)/]
+	[generateMain(anAplicacion)/]
+[/template]
+
+[template private generateAllClasses(aplicacion : Aplicacion)]
+	[generateAppClass(aplicacion)/]
+	[generateEntityClass(aplicacion)/]
+	[generateAttributeClass(aplicacion)/]
+	[generateRoleClass(aplicacion)/]
+	[generateSocialLinksClass(aplicacion)/]
+	[generatePageClass(aplicacion)/]
+	[generateIndexPageClass(aplicacion)/]
+	[generateRolePageClass(aplicacion)/]
+	[generateEntityPageClass(aplicacion)/]
+	[generateIndexEntityPageClass(aplicacion)/]
+	[generateExtendedIndexEntityPageClass(aplicacion)/]
+	[generateDetailIndexEntityPageClass(aplicacion)/]
+	[generateDetailEntityPageClass(aplicacion)/]
+	[generateCreateEntityPageClass(aplicacion)/]
+	[generateUpdateEntityPageClass(aplicacion)/]
+	[generateDeleteEntityPageClass(aplicacion)/]
+	[generateSurveyPageClass(aplicacion)/]
+	[generateResultsPageClass(aplicacion)/]
+	[generateQuestionClass(aplicacion)/]
+
+	[comment Creacion de clases concretas de las entidades, destinadas a utilizarse con los DAOs /]
+	[for(entidad : Entidad | aplicacion.entidades)]
+		[generateSpecificClass(entidad, aplicacion)/]
+	[/for]
+[/template]
+
+[template private generateMain(aplicacion : Aplicacion)]
+[file (aplicacion.nombre.concat('/desktop/src/main/App.java'), false, 'UTF-8')]
+package main;
+
+import java.util.Scanner;
+import model.*;
+
+public class App {
+	public static boolean navegando;
+	public static void main(String['['/]] args){
+		Aplicacion app = Aplicacion.getInstancia();
+		Scanner sc = new Scanner(System.in);
+		System.out.println("Bienvenido a " + app.getNombreApp());
+		int input;
+		navegando = true;
+		createDataFromModel(app);
+		app.navegarAInicio();
+		while(navegando){
+			app.mostrar();
+			input = sc.nextInt();
+			app.procesarInput(input);
+		}
+		System.out.println("Adios!");
+		sc.close();
+	}
+
+	private static void createDataFromModel(Aplicacion app){
+		// Lista de entidades de la aplicacion
+			[for(i : Integer | Sequence{1..aplicacion.entidades->size()})]
+				[let entidad : Entidad = aplicacion.entidades->at(i)]
+				[let nombreEntidad : String = 'entidad' + i.toString()]
+					Entidad [nombreEntidad/] = new Entidad("[entidad.idEntidad/]", "[entidad.nombre/]");
+					app.addEntidad([nombreEntidad/]);
+						[for(j: Integer | Sequence{1..entidad.atributos->size()})]
+							[let atributo : Atributo = entidad.atributos->at(j)]
+								Atributo atributo[nombreEntidad/][j/] = new Atributo("[atributo.nombre/]", TipoDato.[atributo.tipo/]);
+								[nombreEntidad/].addAtributo(atributo[nombreEntidad/][j/]);
+							[/let]
+						[/for]
+				[/let]
+				[/let]
+			[/for]
+
+		// Se incluyen las referencias entre entidades
+			[for(entidad : Entidad | aplicacion.entidades)]
+				Entidad [entidad.idEntidad.toLowerCase()/] = app.getEntidadPorId("[entidad.idEntidad/]");					
+				[if(entidad.referencias->size() > 0)]
+					[for(e : Entidad | entidad.referencias)]
+						[entidad.idEntidad.toLowerCase()/].addReferencia(app.getEntidadPorId("[e.idEntidad/]"));
+					[/for]
+				[/if]
+			[/for]
+
+		// Lista de RRSS de la aplicacion
+			[let numeroEnlaces : Integer = aplicacion.enlaces->size()]
+			[for(i : Integer | Sequence{1..numeroEnlaces})]
+				EnlaceRRSS enlace[i/] = new EnlaceRRSS("[aplicacion.enlaces->at(i).nombre/]", "[aplicacion.enlaces->at(i).enlace/]");
+				app.addEnlaceRRSS(enlace[i/]);
+			[/for]
+			[/let]
+		
+
+		// Lista de paginas de la aplicacion
+		[let numeroPaginas : Integer = aplicacion.paginas->size()]
+			[for (i : Integer | Sequence{1..numeroPaginas})]
+				[let pagina : Pagina = aplicacion.paginas->at(i)]
+				[let nombrePagina : String = 'pagina' + i.toString()]
+					[if(pagina.oclIsKindOf(PaginaDeEntidad) and not pagina.oclIsTypeOf(PaginaCRUDUnica))]
+							[if(pagina.oclIsTypeOf(PaginaIndiceExtendido))]	
+								[pagina.eClass().name/] [nombrePagina/] = new [pagina.eClass().name/]("[pagina.idPagina/]", "[pagina.nombrePagina/]", [pagina.oclAsType(PaginaIndiceExtendido).instanciasPorPagina/]);
+							[else]
+								[pagina.eClass().name/] [nombrePagina/] = new [pagina.eClass().name/]("[pagina.idPagina/]", "[pagina.nombrePagina/]");
+							[/if]
+
+							[nombrePagina/].setEntidad(app.getEntidadPorId("[pagina.oclAsType(PaginaDeEntidad).entidad.idEntidad/]"));
+						
+						[if(pagina.oclIsKindOf(PaginaIndice))]
+							[comment Incluimos la lista de atributos a mostrar /]
+							[if(pagina.oclAsType(PaginaIndice).atributosAMostrar->size() > 0)]
+							[let nombreEntidad : String = 'entidad' + nombrePagina]
+								Entidad [nombreEntidad/] = app.getEntidadPorId("[pagina.oclAsType(PaginaDeEntidad).entidad.idEntidad/]");
+								[for(atributo : Atributo | pagina.oclAsType(PaginaIndice).atributosAMostrar)]
+									[nombrePagina/].addAtributo([nombreEntidad/].getAtributoPorNombre("[atributo.nombre/]"));
+								[/for]
+							[/let]
+							[/if]
+							[if(pagina.oclIsTypeOf(PaginaIndiceExtendido))]
+
+							[comment Incluimos los atributos filtro /]
+								[let nombreEntidad : String = 'entidadFiltro' + nombrePagina]
+									Entidad [nombreEntidad/] = app.getEntidadPorId("[pagina.oclAsType(PaginaIndiceExtendido).entidad.idEntidad/]");
+									[for(atributo : Atributo | pagina.oclAsType(PaginaIndiceExtendido).atributoFiltro)]
+										[nombrePagina/].addAtributoFiltro([nombreEntidad/].getAtributoPorNombre("[atributo.nombre/]"));
+									[/for]
+								[/let]
+							[/if]
+						[/if]	
+						[for(enlaceExterno : String | pagina.enlacesPaginasExternas)]
+							[nombrePagina/].addPaginaExterna("[enlaceExterno/]");
+						[/for]
+						[for(enlace : EnlaceRRSS | pagina.enlacerrss)]
+							[nombrePagina/].addEnlaceRRSS(app.getEnlaceRRSSPorURL("[enlace.enlace/]"));
+						[/for]
+						app.addPagina([nombrePagina/]);											
+					[elseif (pagina.oclIsTypeOf(PaginaEncuestaCuestionario))]
+							[pagina.eClass().name/] [nombrePagina/] = new [pagina.eClass().name/]("[pagina.idPagina/]", "[pagina.nombrePagina/]", [pagina.oclAsType(PaginaEncuestaCuestionario).esCuestionario/]);
+							[let numeroPreguntas : Integer = pagina.oclAsType(PaginaEncuestaCuestionario).preguntas->size()]
+								[for(i : Integer | Sequence{1..numeroPreguntas})]
+									[let pregunta : Pregunta = pagina.oclAsType(PaginaEncuestaCuestionario).preguntas->at(i)]
+									[let nombrePregunta : String = 'pregunta' + i + nombrePagina]
+										Pregunta [nombrePregunta/] = new Pregunta("[pregunta.enunciado/]", TipoPregunta.[pregunta.tipo/], "[pregunta.respuestaCorrecta/]");
+										[for(respuesta : String | pregunta.opciones)]
+											[nombrePregunta/].addOpcion("[respuesta/]");
+										[/for]
+										[nombrePagina/].addPregunta([nombrePregunta/]);
+									[/let]
+									[/let]
+								[/for]
+						[/let]
+
+						[for(enlaceExterno : String | pagina.enlacesPaginasExternas)]
+							[nombrePagina/].addPaginaExterna("[enlaceExterno/]");
+						[/for]
+						[for(enlace : EnlaceRRSS | pagina.enlacerrss)]
+							[nombrePagina/].addEnlaceRRSS(app.getEnlaceRRSSPorURL("[enlace.enlace/]"));
+						[/for]
+						app.addPagina([nombrePagina/]);														
+					[elseif(pagina.oclIsTypeOf(PaginaResultados))]
+						PaginaResultados [nombrePagina/] = new PaginaResultados("[pagina.idPagina/]", "[pagina.nombrePagina/]");
+
+						[for(enlaceExterno : String | pagina.enlacesPaginasExternas)]
+							[nombrePagina/].addPaginaExterna("[enlaceExterno/]");
+						[/for]
+						[for(enlace : EnlaceRRSS | pagina.enlacerrss)]
+							[nombrePagina/].addEnlaceRRSS(app.getEnlaceRRSSPorURL("[enlace.enlace/]"));
+						[/for]
+						app.addPagina([nombrePagina/]);
+					[elseif(pagina.oclIsTypeOf(PaginaCRUDUnica))]
+						// Generación de las páginas CRUD
+						PaginaIndice [nombrePagina/]Indice = new PaginaIndice("[pagina.idPagina/]Indice", "[pagina.nombrePagina/]Indice");
+								[if(pagina.oclAsType(PaginaDeEntidad).entidad.atributos->size() > 0)]
+								[let nombreEntidad : String = 'entidad' + nombrePagina]
+								Entidad [nombreEntidad/] = app.getEntidadPorId("[pagina.oclAsType(PaginaDeEntidad).entidad.idEntidad/]");
+								[for(atributo : Atributo | pagina.oclAsType(PaginaDeEntidad).entidad.atributos)]
+									[nombrePagina/]Indice.addAtributo([nombreEntidad/].getAtributoPorNombre("[atributo.nombre/]"));
+								[/for]
+								[/let]
+								[/if]
+						[nombrePagina/]Indice.setEntidad(app.getEntidadPorId("[pagina.oclAsType(PaginaDeEntidad).entidad.idEntidad/]"));
+						app.addPagina([nombrePagina/]Indice);
+
+
+						PaginaDetalle [nombrePagina/]Detalle = new PaginaDetalle("[pagina.idPagina/]Detalle", "[pagina.nombrePagina/]Detalle");
+						[nombrePagina/]Detalle.setEntidad(app.getEntidadPorId("[pagina.oclAsType(PaginaDeEntidad).entidad.idEntidad/]"));
+						app.addPagina([nombrePagina/]Detalle);
+
+						PaginaCreacion [nombrePagina/]Creacion = new PaginaCreacion("[pagina.idPagina/]Creacion", "[pagina.nombrePagina/]Creacion");
+						[nombrePagina/]Creacion.setEntidad(app.getEntidadPorId("[pagina.oclAsType(PaginaDeEntidad).entidad.idEntidad/]"));
+						app.addPagina([nombrePagina/]Creacion);
+
+
+						PaginaActualizacion [nombrePagina/]Actualizacion = new PaginaActualizacion("[pagina.idPagina/]Actualizacion", "[pagina.nombrePagina/]Actualizacion");
+						[nombrePagina/]Actualizacion.setEntidad(app.getEntidadPorId("[pagina.oclAsType(PaginaDeEntidad).entidad.idEntidad/]"));
+						app.addPagina([nombrePagina/]Actualizacion);
+
+						PaginaBorrado [nombrePagina/]Borrado = new PaginaBorrado("[pagina.idPagina/]Borrado", "[pagina.nombrePagina/]Borrado");
+						[nombrePagina/]Borrado.setEntidad(app.getEntidadPorId("[pagina.oclAsType(PaginaDeEntidad).entidad.idEntidad/]"));
+						app.addPagina([nombrePagina/]Borrado);
+
+						[for(enlaceExterno : String | pagina.enlacesPaginasExternas)]
+							[nombrePagina/]Indice.addPaginaExterna("[enlaceExterno/]");
+							[nombrePagina/]Detalle.addPaginaExterna("[enlaceExterno/]");
+							[nombrePagina/]Creacion.addPaginaExterna("[enlaceExterno/]");
+							[nombrePagina/]Actualizacion.addPaginaExterna("[enlaceExterno/]");
+							[nombrePagina/]Borrado.addPaginaExterna("[enlaceExterno/]");
+						[/for]
+						[for(enlace : EnlaceRRSS | pagina.enlacerrss)]
+							[nombrePagina/]Indice.addEnlaceRRSS(app.getEnlaceRRSSPorURL("[enlace.enlace/]"));
+							[nombrePagina/]Detalle.addEnlaceRRSS(app.getEnlaceRRSSPorURL("[enlace.enlace/]"));
+							[nombrePagina/]Creacion.addEnlaceRRSS(app.getEnlaceRRSSPorURL("[enlace.enlace/]"));
+							[nombrePagina/]Actualizacion.addEnlaceRRSS(app.getEnlaceRRSSPorURL("[enlace.enlace/]"));
+							[nombrePagina/]Borrado.addEnlaceRRSS(app.getEnlaceRRSSPorURL("[enlace.enlace/]"));
+						[/for]
+
+					[else]
+						// Pagina de inicio
+						PaginaInicio [nombrePagina/] = new PaginaInicio("[pagina.idPagina/]", "[pagina.nombrePagina/]");
+						
+						[for(enlaceExterno : String | pagina.enlacesPaginasExternas)]
+							[nombrePagina/].addPaginaExterna("[enlaceExterno/]");
+						[/for]
+						[for(enlace : EnlaceRRSS | pagina.enlacerrss)]
+							[nombrePagina/].addEnlaceRRSS(app.getEnlaceRRSSPorURL("[enlace.enlace/]"));
+						[/for]
+						app.addPagina([nombrePagina/]);
+					[/if]
+
+					
+				[/let]
+				[/let]
+			[/for]
+		[/let]
+
+		// Se incluyen las conexiones entre las paginas
+		[for(pagina : Pagina | aplicacion.paginas)]
+			[if(pagina.enlacesPaginas->size() > 0 or pagina.oclIsTypeOf(PaginaEncuestaCuestionario) or pagina.oclIsTypeOf(PaginaResultados))]
+				[pagina.eClass().name/] [pagina.idPagina/] = ([pagina.eClass().name/]) app.getPaginaPorId("[pagina.idPagina/]");
+				[for(enlace : Pagina | pagina.enlacesPaginas)]
+					[pagina.idPagina/].addPagina(app.getPaginaPorId("[enlace.idPagina/]"));		
+				[/for]
+				[if(pagina.oclIsTypeOf(PaginaEncuestaCuestionario) and pagina.oclAsType(PaginaEncuestaCuestionario).esCuestionario)]
+					[pagina.idPagina/].setPaginaResultados(app.getPaginaPorId("[pagina.oclAsType(PaginaEncuestaCuestionario).paginaresultados.idPagina/]"));
+				[elseif(pagina.oclIsTypeOf(PaginaResultados))]
+					[pagina.idPagina/].setPaginaCuestionario(app.getPaginaPorId("[pagina.oclAsType(PaginaResultados).paginaencuestacuestionario.idPagina/]"));
+	
+				[/if]
+			[/if]
+		[/for]
+
+		// Se incluye en cada entidad las paginas que tiene
+		[for(entidad : Entidad | aplicacion.entidades)]
+			[for(pagina : Pagina | entidad.paginas)]
+				[if(pagina.oclIsTypeOf(PaginaCRUDUnica))]
+				// Páginas CRUD de [pagina.oclAsType(PaginaDeEntidad).entidad.idEntidad/]	
+				[entidad.idEntidad.toLowerCase()/].addPagina(app.getPaginaPorId("[pagina.idPagina/]Indice"));
+				[entidad.idEntidad.toLowerCase()/].addPagina(app.getPaginaPorId("[pagina.idPagina/]Detalle"));
+				[entidad.idEntidad.toLowerCase()/].addPagina(app.getPaginaPorId("[pagina.idPagina/]Creacion"));
+				[entidad.idEntidad.toLowerCase()/].addPagina(app.getPaginaPorId("[pagina.idPagina/]Actualizacion"));
+				[entidad.idEntidad.toLowerCase()/].addPagina(app.getPaginaPorId("[pagina.idPagina/]Borrado"));
+				[else]
+				[entidad.idEntidad.toLowerCase()/].addPagina(app.getPaginaPorId("[pagina.idPagina/]"));
+				[/if]
+			[/for]
+		[/for]
+
+		// Roles de la aplicacion
+		// El rol de Administrador se crea siempre
+		
+		Rol admin = new Rol("Administrador");
+		[for(pagina : Pagina | aplicacion.paginas)]
+			[if(pagina.oclIsTypeOf(PaginaCRUDUnica))]
+			// Páginas CRUD de [pagina.oclAsType(PaginaDeEntidad).entidad.idEntidad/]	
+			admin.addPagina(app.getPaginaPorId("[pagina.idPagina/]Indice"));
+			admin.addPagina(app.getPaginaPorId("[pagina.idPagina/]Detalle"));
+			admin.addPagina(app.getPaginaPorId("[pagina.idPagina/]Creacion"));
+			admin.addPagina(app.getPaginaPorId("[pagina.idPagina/]Actualizacion"));
+			admin.addPagina(app.getPaginaPorId("[pagina.idPagina/]Borrado"));
+			[else]
+			admin.addPagina(app.getPaginaPorId("[pagina.idPagina/]"));
+			[/if]
+		[/for]
+		
+		[let numeroRoles : Integer = aplicacion.roles->size()]
+			[for(i : Integer | Sequence{1..numeroRoles})]
+			[let nombreRol : String = 'rol' + i]
+				Rol [nombreRol/] = new Rol("[aplicacion.roles->at(i).nombre/]"); 	
+				app.addRol([nombreRol/]);	
+				[for(pagina : Pagina | aplicacion.roles->at(i).paginasAccesibles)]
+					[if(pagina.oclIsTypeOf(PaginaCRUDUnica))]
+					// Páginas CRUD de [pagina.oclAsType(PaginaDeEntidad).entidad.idEntidad/]	
+					[nombreRol/].addPagina(app.getPaginaPorId("[pagina.idPagina/]Indice"));
+					[nombreRol/].addPagina(app.getPaginaPorId("[pagina.idPagina/]Detalle"));
+					[nombreRol/].addPagina(app.getPaginaPorId("[pagina.idPagina/]Creacion"));
+					[nombreRol/].addPagina(app.getPaginaPorId("[pagina.idPagina/]Actualizacion"));
+					[nombreRol/].addPagina(app.getPaginaPorId("[pagina.idPagina/]Borrado"));
+					[else]
+					[nombreRol/].addPagina(app.getPaginaPorId("[pagina.idPagina/]"));
+					[/if]
+				[/for]
+			[/let]
+			[/for]
+		[/let]
+
+		// Creamos una pagina para cada rol
+		PaginaRol pag_admin = new PaginaRol("pag_admin", "Administrador");
+		[for(pagina : Pagina | aplicacion.paginas)]
+			[if(pagina.oclIsTypeOf(PaginaCRUDUnica))]
+			// Páginas CRUD de [pagina.oclAsType(PaginaDeEntidad).entidad.idEntidad/]	
+			pag_admin.addPagina(app.getPaginaPorId("[pagina.idPagina/]Indice"));
+			pag_admin.addPagina(app.getPaginaPorId("[pagina.idPagina/]Detalle"));
+			pag_admin.addPagina(app.getPaginaPorId("[pagina.idPagina/]Creacion"));
+			pag_admin.addPagina(app.getPaginaPorId("[pagina.idPagina/]Actualizacion"));
+			pag_admin.addPagina(app.getPaginaPorId("[pagina.idPagina/]Borrado"));
+			[else]
+			pag_admin.addPagina(app.getPaginaPorId("[pagina.idPagina/]"));
+			[/if]
+		[/for]
+		app.getPaginaPorId("[aplicacion.paginas->select(e | e.oclIsTypeOf(PaginaInicio))->first().idPagina/]").addPagina(pag_admin);
+		app.addPagina(pag_admin);
+
+		[for(rol : Rol | aplicacion.roles)]
+			PaginaRol pag_[rol.nombre.replace(' ', '')/] = new PaginaRol("pag_[rol.nombre.replace(' ', '')/]", "[rol.nombre/]");
+			[for(pagina : Pagina | rol.paginasAccesibles)]
+				[if(pagina.oclIsTypeOf(PaginaCRUDUnica))]
+				// Páginas CRUD de [pagina.oclAsType(PaginaDeEntidad).entidad.idEntidad/]	
+				pag_[rol.nombre.replace(' ', '')/].addPagina(app.getPaginaPorId("[pagina.idPagina/]Indice"));
+				pag_[rol.nombre.replace(' ', '')/].addPagina(app.getPaginaPorId("[pagina.idPagina/]Detalle"));
+				pag_[rol.nombre.replace(' ', '')/].addPagina(app.getPaginaPorId("[pagina.idPagina/]Creacion"));
+				pag_[rol.nombre.replace(' ', '')/].addPagina(app.getPaginaPorId("[pagina.idPagina/]Actualizacion"));
+				pag_[rol.nombre.replace(' ', '')/].addPagina(app.getPaginaPorId("[pagina.idPagina/]Borrado"));
+				[else]
+				pag_[rol.nombre.replace(' ', '')/].addPagina(app.getPaginaPorId("[pagina.idPagina/]"));
+				[/if]
+			[/for]
+			app.getPaginaPorId("[aplicacion.paginas->select(e | e.oclIsTypeOf(PaginaInicio))->first().idPagina/]").addPagina(pag_[rol.nombre.replace(' ', '')/]);
+			app.addPagina(pag_[rol.nombre.replace(' ', '')/]);
+		[/for]
+
+	}
+}
+[/file]
+[/template]
+
+[template private generateAppClass(aplicacion : Aplicacion)]
+[file(aplicacion.nombre.concat('/desktop/src/model/Aplicacion.java'), false, 'UTF-8')]
+
+package model;
+import java.util.List;
+import java.util.ArrayList;
+
+public class Aplicacion {
+	private static Aplicacion instancia = null; // Singleton
+	private String idApp;
+	private String nombre;
+	private List<Pagina> paginas;
+	private List<Rol> roles;
+	private List<Entidad> entidades;
+	private List<EnlaceRRSS> enlaces;
+
+	private Pagina paginaActual;
+	
+	private Aplicacion(String idApp, String nombre){
+		this.idApp = idApp;
+		this.nombre  = nombre;
+
+		this.paginas = new ArrayList<>();
+		this.roles = new ArrayList<>();
+		this.entidades = new ArrayList<>();
+		this.enlaces = new ArrayList<>();
+	}
+
+	public static Aplicacion getInstancia(){
+		if(instancia == null){
+			instancia = new Aplicacion("[aplicacion.idApp/]", "[aplicacion.nombre/]");
+		}
+		return instancia;
+	}
+
+	// getters y setters
+	public String getIdApp(){
+		return idApp;
+	}
+	public void setIdApp(String id){
+		this.idApp = id;
+	}
+
+	public String getNombreApp(){
+		return nombre;
+	}
+	public void setNombre(String nombre){
+		this.nombre = nombre;
+	}	
+
+	public List<Pagina> getPaginas(){
+		return this.paginas;
+	}
+	public void setPaginas(List<Pagina> list){
+		this.paginas = list;
+	}
+	public void addPagina(Pagina pag){
+		this.paginas.add(pag);
+	}
+
+	public Pagina getPaginaPorId(String id){
+		for (Pagina p : paginas) {
+        	if (p.getIdPagina().equals(id)) {
+            	return p;
+        	}
+    	}
+		System.out.println("No se ha encontrado la pagina con id: " + id);
+    	return null;	
+	}
+
+	public List<Rol> getRoles(){
+		return this.roles;
+	}
+	public void setRoles(List<Rol> list){
+		this.roles = list;
+	}
+	public void addRol(Rol role){
+		this.roles.add(role);
+	}
+
+	public List<Entidad> getEntidades(){
+		return this.entidades;
+	}
+	public void setEntidades(List<Entidad> list){
+		this.entidades = list;
+	}
+	public void addEntidad(Entidad ent){
+		this.entidades.add(ent);
+	}
+	public Entidad getEntidadPorId(String id){
+		for(Entidad e : this.entidades){
+			if(e.getIdEntidad().equals(id)){
+				return e;
+			}
+		}
+		System.out.println("No se ha encontrado la entidad con id: " + id);
+		return null;
+	}
+
+	public List<EnlaceRRSS> getEnlacesRRSS(){
+		return this.enlaces;
+	}
+	public void setEnlacesRRSS(List<EnlaceRRSS> list){
+		this.enlaces = list;
+	}
+	public void addEnlaceRRSS(EnlaceRRSS rrss){
+		this.enlaces.add(rrss);
+	}
+
+	public EnlaceRRSS getEnlaceRRSSPorURL(String enlace){
+			for(EnlaceRRSS e : this.enlaces){
+			if(e.getEnlace().equals(enlace)){
+				return e;
+			}
+		}
+		System.out.println("No se ha encontrado el EnlaceRRSS con enlace: " + enlace);
+		return null;
+	}
+
+	public void navegarA(String id){
+		Pagina pag = getPaginaPorId(id);
+		this.paginaActual = pag;
+		
+	}
+
+	public void navegarAInicio(){
+		navegarA("[aplicacion.paginas->select(e | e.oclIsTypeOf(PaginaInicio))->first().idPagina/]");
+	}
+
+	public void mostrar(){
+		System.out.println("\n\n\n\n\n"); // Simula limpiar la consola.
+		this.paginaActual.mostrarEnlacesExternos();
+		this.paginaActual.mostrar();
+	}
+
+	public void procesarInput(int input){
+		this.paginaActual.procesarInput(input);
+	}
+}
+
+[/file]
+[/template]
+
+[template private generateEntityClass(aplicacion : Aplicacion)]
+[file(aplicacion.nombre.concat('/desktop/src/model/Entidad.java'), false, 'UTF-8')]
+package model;
+import java.util.List;
+import java.util.ArrayList;
+
+public class Entidad {
+	private String idEntidad;
+	private String nombreEntidad;
+	
+	private List<Atributo> atributos;
+	private List<Entidad> referencias;
+	private List<Pagina> paginas;
+
+	public Entidad(String idEntidad, String nombreEntidad){
+		this.idEntidad = idEntidad;
+		this.nombreEntidad = nombreEntidad;
+		this.atributos = new ArrayList<>();
+		this.referencias = new ArrayList<>();
+		this.paginas = new ArrayList<>();		
+	}
+
+
+	// setters y getters
+	public String getIdEntidad(){
+		return this.idEntidad;
+	}
+	public void setIdEntidad(String id){
+		this.idEntidad = id;
+	}
+
+	public String getNombreEntidad(){
+		return this.nombreEntidad;
+	}
+	public void setNombreEntidad(String nombre){
+		this.nombreEntidad = nombre;
+	}
+	
+	public List<Atributo> getAtributos(){
+		return this.atributos;
+	}
+	public void setAtributos(List<Atributo> list){
+		this.atributos = list;
+	}
+	public void addAtributo(Atributo att){
+		this.atributos.add(att);
+	}
+	public Atributo getAtributoPorNombre(String nombre){
+		for(Atributo a : this.atributos){
+			if(a.getNombre().equals(nombre)){
+				return a;
+			}
+		}
+		System.out.println("No se ha encontrado el atributo con nombre: " + nombre);
+		return null;	
+	}
+
+	public List<Entidad> getReferencias(){
+		return this.referencias;
+	}
+	public void setReferencias(List<Entidad> list){
+		this.referencias = list;
+	}
+	public void addReferencia(Entidad ref){
+		this.referencias.add(ref);
+	}	
+
+	public List<Pagina> getPaginas(){
+		return this.paginas;
+	}
+	public void setPaginas(List<Pagina> list){
+		this.paginas = list;
+	}
+	public void addPagina(Pagina pag){
+		this.paginas.add(pag);
+	}	
+}
+
+[/file]
+[/template]
+
+[template private generateSpecificClass(entidad : Entidad, aplicacion : Aplicacion)]
+[let class : String = entidad.idEntidad.toUpperFirst()]
+[file(aplicacion.nombre.concat('/desktop/src/model/'+ class +'.java'), false, 'UTF-8')]
+package model;
+
+public class [class/] {
+	[for(atributo : Atributo | entidad.atributos)]
+		private [if(atributo.tipo = TipoDato::INTEGER)]int[elseif(atributo.tipo = TipoDato::STRING)]String[else]boolean[/if] [atributo.nombre/];
+	[/for]
+	[for(referencia : Entidad | entidad.referencias)]
+		private [referencia.idEntidad.toUpperFirst()/] [referencia.idEntidad.toLowerCase()/];
+	[/for]
+
+	public [class/](){
+	}
+
+
+	[comment Si tiene atributos, genera constructor parametrizado /]
+	[let numAtributos : Integer = entidad.atributos->size()]
+	[let numeroReferencias : Integer = entidad.referencias->size()]
+	[if(numAtributos > 0)]
+	public [class/](
+		[for(i : Integer | Sequence{1..numAtributos})]
+		[if(entidad.atributos->at(i).tipo = TipoDato::INTEGER)]int[elseif(entidad.atributos->at(i).tipo = TipoDato::STRING)]String[else]boolean[/if] [entidad.atributos->at(i).nombre/][if(i <> numAtributos or entidad.referencias->size() > 0)],[/if]
+		[/for]
+		[for(j : Integer | Sequence{1..numeroReferencias})]
+		[entidad.referencias->at(j).idEntidad.toUpperFirst()/] [entidad.referencias->at(j).idEntidad.toLowerCase()/][if(j <> numeroReferencias)],[/if]
+		[/for]
+	
+	){	
+		[for(atributo : Atributo | entidad.atributos)]
+		this.[atributo.nombre/] = [atributo.nombre/];
+		[/for]
+		[for(referencia : Entidad | entidad.referencias)]
+		this.[referencia.idEntidad.toLowerCase()/] = [referencia.idEntidad.toLowerCase()/];
+		[/for]
+	}
+	[/if]
+	[/let]
+	[/let]
+
+	[for(atributo : Atributo | entidad.atributos)]
+		public [if(atributo.tipo = TipoDato::INTEGER)]int[elseif(atributo.tipo = TipoDato::STRING)]String[else]boolean[/if] get[atributo.nombre.toUpperFirst()/](){
+			return this.[atributo.nombre/];
+		} 
+
+		public void set[atributo.nombre.toUpperFirst()/]([if(atributo.tipo = TipoDato::INTEGER)]int[elseif(atributo.tipo = TipoDato::STRING)]String[else]boolean[/if] [atributo.nombre/]){
+			this.[atributo.nombre/] = [atributo.nombre/];
+		}
+	[/for]
+	[for(referencia : Entidad | entidad.referencias)]
+		public [referencia.idEntidad.toUpperFirst()/] get[referencia.idEntidad.toUpperFirst()/](){
+			return this.[referencia.idEntidad.toLowerCase()/];
+		} 
+
+		public void set[referencia.idEntidad.toUpperFirst()/]([referencia.idEntidad.toUpperFirst()/] [referencia.idEntidad.toLowerCase()/]){
+			this.[referencia.idEntidad.toLowerCase()/] = [referencia.idEntidad.toLowerCase()/];
+		}
+	[/for]
+}
+[/file]
+[/let]
+[/template]
+
+[template private generateAttributeClass(aplicacion : Aplicacion)]
+[file(aplicacion.nombre.concat('/desktop/src/model/Atributo.java'), false, 'UTF-8')]
+package model;
+
+public class Atributo {
+	private String nombreAtributo;
+	private TipoDato tipo;
+
+
+	public Atributo(String nombre, TipoDato tipo){
+		this.nombreAtributo = nombre;
+		this.tipo = tipo;		
+	}
+
+
+	// setters y getters
+	public String getNombre(){
+		return this.nombreAtributo;
+	}
+	public void setNombre(String nombre){
+		this.nombreAtributo = nombre;
+	}
+
+	public TipoDato getTipo(){
+		return this.tipo;
+	}
+	public void setTipo(TipoDato tipo){
+		this.tipo = tipo;
+	}
+		
+}
+
+[/file]
+[file(aplicacion.nombre.concat('/desktop/src/model/TipoDato.java'), false, 'UTF-8')]
+package model;
+[comment Creo aquí también el enum TipoDato porque está íntimamente relacionado con la clase Atributo /]
+public enum TipoDato {
+	INTEGER,
+	BOOLEAN,
+	STRING
+}
+[/file]
+[/template]
+
+[template private generateRoleClass(aplicacion : Aplicacion)]
+	[file(aplicacion.nombre.concat('/desktop/src/model/Rol.java'), false, 'UTF-8')]
+package model;
+import java.util.List;
+import java.util.ArrayList;
+
+public class Rol {
+	private String nombreRol;
+	private List<Pagina> paginasAccesibles;
+
+	public Rol(String nombreRol){
+		this.nombreRol = nombreRol;
+		this.paginasAccesibles = new ArrayList<>();		
+	}
+
+	// setters y getters
+	public String getNombreRol(){
+		return this.nombreRol;
+	}
+	public void setNombreRol(String nombre){
+		this.nombreRol = nombre;
+	}
+	public List<Pagina> getPaginasAccesibles(){
+		return this.paginasAccesibles;
+	}
+	public void setPaginas(List<Pagina> list){
+		this.paginasAccesibles = list;
+	}
+	public void addPagina(Pagina pag){
+		this.paginasAccesibles.add(pag);
+	}	
+}
+[/file]
+[/template]
+
+[template private generateSocialLinksClass(aplicacion : Aplicacion)]
+	[file(aplicacion.nombre.concat('/desktop/src/model/EnlaceRRSS.java'), false, 'UTF-8')]
+package model;
+
+public class EnlaceRRSS {
+	private String nombre;
+	private String enlace;
+
+	public EnlaceRRSS(String nombre, String enlace){
+		this.nombre = nombre;
+		this.enlace = enlace;		
+	}
+
+
+	// setters y getters
+	public String getNombre(){
+		return this.nombre;
+	}
+	public void setNombre(String nombre){
+		this.nombre = nombre;
+	}
+
+	public String getEnlace(){
+		return this.enlace;
+	}
+	public void setEnlace(String nombre){
+		this.enlace = nombre;
+	}
+
+}
+[/file]
+[/template]
+
+[template private generatePageClass(aplicacion : Aplicacion)]
+ 	[file(aplicacion.nombre.concat('/desktop/src/model/Pagina.java'), false, 'UTF-8')]
+package model;
+import java.util.List;
+import java.util.ArrayList;
+
+public abstract class Pagina {
+	private String idPagina;
+	private String nombrePagina;
+	
+	private List<String> enlacesPaginasExternas;
+	private List<Pagina> enlacesPaginas;
+	private List<EnlaceRRSS> enlacesRRSS;
+	
+
+	public Pagina(String id, String nombre){
+		this.idPagina = id;		
+		this.nombrePagina = nombre;
+
+		this.enlacesPaginasExternas = new ArrayList<>();
+		this.enlacesPaginas = new ArrayList<>();
+		this.enlacesRRSS = new ArrayList<>();
+	}
+
+
+	// setters y getters
+	public String getIdPagina(){
+		return this.idPagina;
+	}
+	public void setIdPagina(String idPagina){
+		this.idPagina = idPagina;
+	}
+
+	public String getNombre(){
+		return this.nombrePagina;
+	}
+	public void setNombre(String nombre){
+		this.nombrePagina = nombre;
+	}
+
+	public List<String> getPaginasExternas(){
+		return this.enlacesPaginasExternas;
+	}
+	public void setPaginasExternas(List<String> list){
+		this.enlacesPaginasExternas = list;
+	}
+	public void addPaginaExterna(String pag){
+		this.enlacesPaginasExternas.add(pag);
+	}
+
+	public List<Pagina> getPaginas(){
+		return this.enlacesPaginas;
+	}
+	public void setPaginas(List<Pagina> list){
+		this.enlacesPaginas = list;
+	}
+	public void addPagina(Pagina pag){
+		this.enlacesPaginas.add(pag);
+	}
+
+	public List<EnlaceRRSS> getEnlacesRRSS(){
+		return this.enlacesRRSS;
+	}
+	public void setEnlacesRRSS(List<EnlaceRRSS> list){
+		this.enlacesRRSS = list;
+	}
+	public void addEnlaceRRSS(EnlaceRRSS enlace){
+		this.enlacesRRSS.add(enlace);
+	}
+
+	public void mostrar(){}
+	public void procesarInput(int input){}
+	public void mostrarEnlacesExternos(){
+		if(this.enlacesRRSS.size() > 0 || this.enlacesPaginasExternas.size() > 0) {
+			System.out.println("Enlaces externos:");
+			for(EnlaceRRSS enlace : this.enlacesRRSS){
+				System.out.println("- " + enlace.getNombre() + " / " + enlace.getEnlace());
+			}
+			for(String enlace : this.enlacesPaginasExternas){
+				System.out.println("- " + enlace);
+			}
+		}
+	}
+}
+[/file]
+[/template]
+
+[template private generateIndexPageClass(aplicacion : Aplicacion)]
+[file(aplicacion.nombre.concat('/desktop/src/model/PaginaInicio.java'), false, 'UTF-8')]
+package model;
+import main.App;
+
+public class PaginaInicio extends Pagina {
+	
+	public PaginaInicio(String id, String nombre){
+		super(id, nombre);
+	}
+	
+	@Override
+	public void mostrar(){
+		this.mostrarEnlacesExternos();
+
+		System.out.println("Por favor, elige un rol de acceso:");
+		System.out.println("0. Salir");
+
+		for(int i = 0; i < this.getPaginas().size(); i++){
+				System.out.println(i+1 + ". " + this.getPaginas().get(i).getNombre());				
+		}
+	}
+	@Override
+	public void procesarInput(int input){
+		if(input == 0){
+			App.navegando = false;
+		} else {
+			Aplicacion.getInstancia().navegarA(this.getPaginas().get(input-1).getIdPagina());
+		}
+	}
+}
+[/file]
+[/template]
+
+[template private generateRolePageClass(aplicacion : Aplicacion)]
+[comment Necesaria para definir cómo se ve la página de cada rol (Equivalente a su index.html de la versión web) /]
+[file(aplicacion.nombre.concat('/desktop/src/model/PaginaRol.java'), false, 'UTF-8')]
+package model;
+
+public class PaginaRol extends Pagina {
+	
+	public PaginaRol(String id, String nombre){
+		super(id, nombre);
+	}
+	
+	@Override
+	public void mostrar(){
+		System.out.println("Paginas a las que tiene acceso el rol " + this.getNombre());
+		System.out.println("0. Volver al inicio");	
+		for(int i = 1; i <= this.getPaginas().size(); i++){
+			System.out.println(i + ". " + this.getPaginas().get(i-1).getNombre());
+		}
+
+	}
+	@Override
+	public void procesarInput(int input){
+		if(input == 0){
+			Aplicacion.getInstancia().navegarAInicio();
+		} else {
+			Aplicacion.getInstancia().navegarA(this.getPaginas().get(input-1).getIdPagina());
+		}
+	}
+}
+[/file]
+[/template]
+
+[template private generateEntityPageClass(aplicacion : Aplicacion)]
+	[file(aplicacion.nombre.concat('/desktop/src/model/PaginaEntidad.java'), false, 'UTF-8')]
+package model;
+
+public abstract class PaginaEntidad extends Pagina {
+	protected Entidad entidad;
+	
+	public PaginaEntidad(String id, String nombre){
+		super(id, nombre);
+	}
+
+	public Entidad getEntidad(){
+		return this.entidad;
+	}
+
+	public void setEntidad(Entidad entidad){
+		this.entidad = entidad;
+	}
+}
+[/file]
+[/template]
+
+[template private generateIndexEntityPageClass(aplicacion : Aplicacion)] 
+		[file(aplicacion.nombre.concat('/desktop/src/model/PaginaIndice.java'), false, 'UTF-8')]
+package model;
+import java.util.List;
+import java.util.ArrayList;
+
+public class PaginaIndice extends PaginaEntidad {
+	private List<Atributo> atributosAMostrar;
+	
+	public PaginaIndice(String id, String nombre){
+		super(id, nombre);
+		this.atributosAMostrar = new ArrayList<>();
+	}
+
+	public List<Atributo> getAtributos(){
+		return this.atributosAMostrar;
+	}
+
+	public void setAtributos(List<Atributo> list){
+		this.atributosAMostrar = list;
+	}
+
+	public void addAtributo(Atributo att){
+		this.atributosAMostrar.add(att);
+	}
+	
+	@Override
+	public void mostrar(){
+		System.out.println("Entidades de tipo " + this.entidad.getNombreEntidad() + " que hay en el sistema:");
+		System.out.print("ID    ");
+		for(int i = 0; i < atributosAMostrar.size(); i++){
+			System.out.print(atributosAMostrar.get(i).getNombre() + "    ");
+			
+		}
+		System.out.println();
+		for(int i = 1; i < 4; i++){
+			for(int j = 0; j <= atributosAMostrar.size(); j++)	{
+				if(j == 0){
+					System.out.print(i+"."+ this.entidad.getNombreEntidad() +"-0" + i);
+				} else {
+					System.out.print("    " + atributosAMostrar.get(j-1).getNombre() + "-0" + i);
+				}
+			}
+			System.out.println();
+		}
+		
+		System.out.println("\n\n Elija una para ver los detalles de la entidad.\nPulse 0 para volver al inicio.");
+	}
+
+	@Override
+	public void procesarInput(int input){
+		if(input == 0){
+			Aplicacion.getInstancia().navegarAInicio();
+		} else {
+			PaginaDetalle pag = (PaginaDetalle) this.entidad.getPaginas().stream().filter(p -> p instanceof PaginaDetalle).findFirst().orElse(null);
+			Aplicacion.getInstancia().navegarA(pag.getIdPagina());
+		}
+	}
+}
+[/file]
+[/template]
+
+[template private generateExtendedIndexEntityPageClass(aplicacion : Aplicacion)]
+		[file(aplicacion.nombre.concat('/desktop/src/model/PaginaIndiceExtendido.java'), false, 'UTF-8')]
+package model;
+import java.util.List;
+import java.util.ArrayList;
+
+public class PaginaIndiceExtendido extends PaginaIndice {
+	private int instanciasPorPagina;
+	private List<Atributo> filtro;
+	
+
+	public PaginaIndiceExtendido(String id, String nombre, int instanciasPorPagina){
+		super(id, nombre);
+		this.instanciasPorPagina = instanciasPorPagina;
+		this.filtro = new ArrayList<>();
+	}
+
+	public int getInstanciasPorPagina(){
+		return instanciasPorPagina;
+	}
+	public void setInstanciasPorPagina(int i){
+		this.instanciasPorPagina = i;
+	}
+
+	public List<Atributo> getAtributosFiltro(){
+		return this.filtro;
+	}
+	public void setAtributosFiltro(List<Atributo> filtro){
+		this.filtro = filtro;
+	}
+	public void addAtributoFiltro(Atributo att){
+		this.filtro.add(att);
+	}
+
+	@Override
+	public void mostrar(){
+		System.out.println("Entidades de tipo " + this.entidad.getNombreEntidad() + " que hay en el sistema:");
+		System.out.print("Filtrando por: ");
+
+		for(int i = 0; i < filtro.size(); i++){
+			System.out.print(filtro.get(i).getNombre() + "    ");
+		}
+		System.out.println();
+
+		System.out.print("ID    ");
+		for(int i = 0; i < this.getAtributos().size(); i++){
+			System.out.print(this.getAtributos().get(i).getNombre() + "    ");
+			
+		}
+		System.out.println();
+		for(int i = 1; i <= instanciasPorPagina; i++){
+			for(int j = 0; j <= this.getAtributos().size(); j++)	{
+				if(j == 0){
+					System.out.print(i+"."+ this.entidad.getNombreEntidad() +"-0" + i);
+				} else {
+					System.out.print("    " + this.getAtributos().get(j-1).getNombre() + "-0" + i);
+				}
+			}
+			System.out.println();
+		}
+		
+		System.out.println("\n\n Elija una para ver los detalles de la entidad.");
+		System.out.println("Pulse A o D para navegar por las páginas");
+		System.out.println("Pulse 0 para volver al inicio.");
+	}
+}
+[/file]
+[/template]
+
+[template private generateDetailIndexEntityPageClass(aplicacion : Aplicacion)]
+		[file(aplicacion.nombre.concat('/desktop/src/model/PaginaIndiceDetalle.java'), false, 'UTF-8')]
+package model;
+
+public class PaginaIndiceDetalle extends PaginaIndice {
+
+
+	public PaginaIndiceDetalle(String id, String nombre){
+		super(id, nombre);
+	}
+
+	@Override
+	public void mostrar(){
+		System.out.println("Entidades de tipo " + this.entidad.getNombreEntidad() + " que hay en el sistema:");
+
+		System.out.println();
+		for(int i = 1; i < 4; i++){
+			for(int j = 0; j <= this.getAtributos().size(); j++)	{
+				if(j == 0){
+					System.out.print(i+"."+ this.entidad.getNombreEntidad() +"-0" + i);
+				} else {
+					System.out.print("    " + this.getAtributos().get(j-1).getNombre() + "-0" + i);
+				}
+			}
+			System.out.println();
+		}
+
+		System.out.println("Pulse 0 para volver al inicio.");
+	}
+
+	@Override
+	public void procesarInput(int input){
+		if(input == 0){
+			Aplicacion.getInstancia().navegarAInicio();
+		}
+	}
+}
+[/file]
+[/template]
+
+[template private generateDetailEntityPageClass(aplicacion : Aplicacion)]
+		[file(aplicacion.nombre.concat('/desktop/src/model/PaginaDetalle.java'), false, 'UTF-8')]
+package model;
+
+public class PaginaDetalle extends PaginaEntidad {
+
+	public PaginaDetalle(String id, String nombre){
+		super(id, nombre);
+	}
+	
+	@Override
+	public void mostrar(){
+		System.out.println(this.entidad.getNombreEntidad() + "-0x:");
+		for (int i = 0; i <= this.entidad.getAtributos().size(); i++) {
+			if (i == 0) {
+				System.out.print("ID    ");
+				System.out.println(this.entidad.getNombreEntidad() + "-0x");
+			} else {
+				System.out.print(this.entidad.getAtributos().get(i-1).getNombre() + "    ");
+				System.out.println("    " + this.entidad.getAtributos().get(i - 1).getNombre() + "-0x");
+			}
+
+		}
+		for(int i = 0; i < this.entidad.getReferencias().size(); i++){
+			System.out.print(this.entidad.getReferencias().get(i).getNombreEntidad() + "    ");
+			System.out.print("    " + this.entidad.getReferencias().get(i).getNombreEntidad() + "-0x");
+		}
+		System.out.println("\n\nPulse 0 para volver al inicio.");
+	}
+
+	@Override
+	public void procesarInput(int input){
+		if(input == 0){
+			Aplicacion.getInstancia().navegarAInicio();
+		}
+	}
+}
+[/file]
+[/template]
+
+[template private generateCreateEntityPageClass(aplicacion : Aplicacion)]
+		[file(aplicacion.nombre.concat('/desktop/src/model/PaginaCreacion.java'), false, 'UTF-8')]
+package model;
+
+public class PaginaCreacion extends PaginaEntidad {
+
+	public PaginaCreacion(String id, String nombre){
+		super(id, nombre);
+	}
+	
+	@Override
+	public void mostrar(){
+		System.out.println("Página de creación de " + this.entidad.getNombreEntidad());
+		System.out.println("Introduzca información correspondiente a los siguientes campos:");
+		for(int i = 0; i < this.entidad.getAtributos().size(); i++){
+			System.out.println("- " + this.entidad.getAtributos().get(i).getNombre());
+		}
+		for(int i = 0; i < this.entidad.getReferencias().size(); i++){
+			System.out.print("- " + this.entidad.getReferencias().get(i).getNombreEntidad());
+		}
+		System.out.println();
+
+		System.out.println("Pulse 0 para volver al inicio.");	
+		System.out.println("Pulse 1 para introducir los parámetros y crear un/a " + this.entidad.getNombreEntidad());
+	}
+
+	@Override
+	public void procesarInput(int input){
+		if(input == 0){
+			Aplicacion.getInstancia().navegarAInicio();
+		} else {
+			System.out.println("¡Has creado un/a " + this.entidad.getNombreEntidad() + "!");
+		}
+	}
+}
+[/file]
+[/template]
+
+[template private generateUpdateEntityPageClass(aplicacion : Aplicacion)]
+		[file(aplicacion.nombre.concat('/desktop/src/model/PaginaActualizacion.java'), false, 'UTF-8')]
+package model;
+
+public class PaginaActualizacion extends PaginaEntidad {
+
+	public PaginaActualizacion(String id, String nombre){
+		super(id, nombre);
+	}
+	
+	@Override
+	public void mostrar(){
+		System.out.println("Página de actualización de " + this.entidad.getNombreEntidad() + "-0x");
+		System.out.println("Introduzca información correspondiente a los siguientes campos:");
+		for(int i = 0; i < this.entidad.getAtributos().size(); i++){
+			System.out.println("- " + this.entidad.getAtributos().get(i).getNombre());
+		}
+		for(int i = 0; i < this.entidad.getReferencias().size(); i++){
+			System.out.print("- " + this.entidad.getReferencias().get(i).getNombreEntidad());
+		}
+		System.out.println();
+
+		System.out.println("Pulse 0 para volver al inicio.");	
+		System.out.println("Pulse 1 para introducir los parámetros y actualizar " + this.entidad.getNombreEntidad() + "-0x");
+	}
+
+	@Override
+	public void procesarInput(int input){
+		if(input == 0){
+			Aplicacion.getInstancia().navegarAInicio();
+		} else {
+			System.out.println("¡Has actualizado " + this.entidad.getNombreEntidad() + "-0x!");
+		}
+	}
+}
+[/file]
+[/template]
+
+[template private generateDeleteEntityPageClass(aplicacion : Aplicacion)]
+		[file(aplicacion.nombre.concat('/desktop/src/model/PaginaBorrado.java'), false, 'UTF-8')]
+package model;
+
+public class PaginaBorrado extends PaginaEntidad {
+	
+	public PaginaBorrado(String id, String nombre){
+		super(id, nombre);
+	}
+	
+	@Override
+	public void mostrar(){
+		System.out.println("Entidades de tipo " + this.entidad.getNombreEntidad() + " que hay en el sistema:");
+		System.out.println();
+
+		for(int i = 1; i < 4; i++){
+					System.out.println(i+"."+ this.entidad.getNombreEntidad() +"-0" + i);
+		}
+		
+		System.out.println("\n\n Elija una para borrar la entidad.\nPulse 0 para volver al inicio.");
+	}
+
+	@Override
+	public void procesarInput(int input){
+		if(input == 0){
+			Aplicacion.getInstancia().navegarAInicio();
+		} else {
+			System.out.println("¡Has borrado " + this.entidad.getNombreEntidad() + "-0" + input + "!");
+		}
+	}
+}
+[/file]
+[/template]
+
+[template private generateSurveyPageClass(aplicacion : Aplicacion)]
+[file(aplicacion.nombre.concat('/desktop/src/model/PaginaEncuestaCuestionario.java'), false, 'UTF-8')]
+package model;
+import java.util.List;
+import java.util.ArrayList;
+
+public class PaginaEncuestaCuestionario extends Pagina {
+	private boolean esCuestionario;	
+	private List<Pregunta> preguntas;
+	private Pagina paginaResultados;
+
+	public PaginaEncuestaCuestionario(String id, String nombre, boolean esCuestionario){
+		super(id, nombre);
+		this.esCuestionario = esCuestionario;
+		this.preguntas = new ArrayList<>();
+	}
+
+	public boolean getEsCuestionario(){
+		return this.esCuestionario;
+	}
+	public void setEsCuestionario(boolean esCuestionario){
+		this.esCuestionario = esCuestionario;
+	}
+
+	public Pagina getPaginaResultados(){
+		return this.paginaResultados;
+	}
+	public void setPaginaResultados(Pagina pag){
+		this.paginaResultados = pag;
+	}
+
+	public List<Pregunta> getPreguntas(){
+		return this.preguntas;
+	}
+	public void setPreguntas(List<Pregunta> preguntas){
+		this.preguntas = preguntas;
+	}
+	public void addPregunta(Pregunta pre){
+		this.preguntas.add(pre);
+	}
+	
+	@Override
+	public void mostrar(){
+		String titulo = esCuestionario ? "Cuestionario " : "Encuesta ";
+		System.out.println(titulo.concat(this.getNombre()));
+		System.out.println("Preguntas a responder: ");	
+		for(int i = 0; i < this.preguntas.size(); i++){
+			Pregunta p = this.preguntas.get(i);
+			System.out.print(i + ". " + p.getEnunciado());
+			TipoPregunta tipo = p.getTipo();
+			System.out.print("    ");
+			if( tipo == TipoPregunta.VERDADERO_FALSO){
+				System.out.println(" ['['/]V/F]");
+			} else if (tipo == TipoPregunta.SELECCION) {
+				for(int j = 0; j < p.getOpciones().size(); j++){
+					if(j != 0){
+						System.out.print(", ");
+					}
+					System.out.print(p.getOpciones().get(j));
+				}
+				System.out.println();
+			} else {
+				System.out.println("Introduzca una respuesta corta.");	
+			}
+		}
+
+		System.out.println("\n\n Pulse 1 para introducir las respuestas");
+		if(esCuestionario){
+			System.out.println("Pulse 2 para ver la página de resultados.");
+		}
+		System.out.println("\n\n Pulse 0 para volver al inicio");
+	}
+	@Override
+	public void procesarInput(int input){
+		if(input == 0){
+			Aplicacion.getInstancia().navegarAInicio();
+		} else if(input == 1){
+			System.out.println("¡Gracias por responder a las preguntas!");
+		} else if(input == 2 && this.esCuestionario){
+			Aplicacion.getInstancia().navegarA(this.paginaResultados.getIdPagina());
+		}
+	}
+}
+[/file]
+[/template]
+
+[template private generateResultsPageClass(aplicacion : Aplicacion)]
+[file(aplicacion.nombre.concat('/desktop/src/model/PaginaResultados.java'), false, 'UTF-8')]
+package model;
+
+public class PaginaResultados extends Pagina {
+	private Pagina paginaCuestionario;
+
+	public PaginaResultados(String id, String nombre){
+		super(id, nombre);
+	}
+
+	public Pagina getPaginaCuestionario(){
+		return this.paginaCuestionario;
+	}
+	public void setPaginaCuestionario(Pagina pag){
+		this.paginaCuestionario = pag;
+	}
+
+	
+	@Override
+	public void mostrar(){
+		System.out.println(this.getNombre());
+		System.out.println("Preguntas y respuestas");
+		PaginaEncuestaCuestionario cuestionario = (PaginaEncuestaCuestionario) paginaCuestionario;
+		for(int i = 0; i < cuestionario.getPreguntas().size(); i++){
+			Pregunta p = cuestionario.getPreguntas().get(i);
+			System.out.println(i + ". " + p.getEnunciado());
+			System.out.println(p.getRespuestaCorrecta());
+		}
+
+		System.out.println("\n\n Pulse 1 para volver al cuestionario");
+		System.out.println("\n\n Pulse 0 para volver al inicio");
+	}
+	@Override
+	public void procesarInput(int input){
+		if(input == 0){
+			Aplicacion.getInstancia().navegarAInicio();
+		} else if(input == 1){
+			Aplicacion.getInstancia().navegarA(this.paginaCuestionario.getIdPagina());
+		}
+	}
+}
+[/file]
+[/template]
+
+[template private generateQuestionClass(aplicacion : Aplicacion)]
+[file(aplicacion.nombre.concat('/desktop/src/model/Pregunta.java'), false, 'UTF-8')]
+package model;
+import java.util.List;
+import java.util.ArrayList;
+
+public class Pregunta {
+	private String enunciado;
+	private TipoPregunta tipo;
+	private String respuestaCorrecta;
+	private List<String> opciones;
+
+	public Pregunta(String enunciado, TipoPregunta tipo, String respuestaCorrecta){
+		this.enunciado = enunciado;
+		this.tipo = tipo;
+		this.respuestaCorrecta = respuestaCorrecta;
+		this.opciones = new ArrayList<>();
+	}
+	
+	public String getEnunciado(){
+		return this.enunciado;
+	}
+	public void setEnunciado(String enunciado){
+		this.enunciado = enunciado;
+	}
+
+	public TipoPregunta getTipo(){
+		return this.tipo;
+	}
+	public void setTipo(TipoPregunta tipo){
+		this.tipo = tipo;
+	}
+
+	public String getRespuestaCorrecta(){
+		return this.respuestaCorrecta;
+	}
+	public void setRespuestaCorrecta(String respuesta){
+		this.respuestaCorrecta = respuesta;
+	}
+
+	public List<String> getOpciones(){
+		return this.opciones;
+	}
+	public void setOpciones(List<String> opc){
+		this.opciones = opc;
+	}
+	public void addOpcion(String opc){
+		this.opciones.add(opc);
+	}
+
+}
+[/file]
+[file(aplicacion.nombre.concat('/desktop/src/model/TipoPregunta.java'), false, 'UTF-8')]
+package model;
+[comment Creo aquí también el enum TipoPregunta porque está íntimamente relacionado con la clase Pregunta /]
+public enum TipoPregunta {
+	VERDADERO_FALSO,
+	SELECCION,
+	RESPUESTA_CORTA
+}
+[/file]
+[/template]
+
+[template private generateMetadata(aplicacion : Aplicacion)]
+[file(aplicacion.nombre.concat('/desktop/src/.project'), false, 'UTF-8')]
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+	<name>dmss.dataweb.[aplicacion.idApp/]</name>
+	<comment></comment>
+	<projects>
+	</projects>
+    <buildSpec>
+        <buildCommand>
+            <name>org.eclipse.jdt.core.javabuilder</name>
+            <arguments>
+            </arguments>
+        </buildCommand>
+    </buildSpec>
+    <natures>
+        <nature>org.eclipse.jdt.core.javanature</nature>
+    </natures>
+</projectDescription>
+[/file]
+[file(aplicacion.nombre.concat('/desktop/src/.classpath'), false, 'UTF-8')]
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
+[/file]
+[/template]

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DataWeb:Aplicacion
+    xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:DataWeb="http://example.org/DataWeb"
+    idApp="App1"
+    nombre="AppPrueba">
+  <paginas xsi:type="DataWeb:PaginaInicio"
+      idPagina="home"
+      nombrePagina="Página principal"/>
+  <paginas xsi:type="DataWeb:PaginaIndiceExtendido"
+      idPagina="ver_autores_nombre"
+      nombrePagina="Ver autores por nombre"
+      enlacesPaginas="ver_autores"
+      entidad="entidad_autor"
+      atributosAMostrar="//@entidades.1/@atributos.0 //@entidades.1/@atributos.1"
+      instanciasPorPagina="3"
+      atributoFiltro="//@entidades.1/@atributos.0"/>
+  <paginas xsi:type="DataWeb:PaginaEncuestaCuestionario"
+      idPagina="cuestionario_1"
+      nombrePagina="Cuestionario 1"
+      esCuestionario="true"
+      paginaresultados="resultados_cuestionario_1">
+    <preguntas
+        enunciado="¿Cuál de las siguientes opciones NO es un lenguaje de programación?"
+        tipo="SELECCION"
+        respuestaCorrecta="HTML">
+      <opciones>Python</opciones>
+      <opciones>HTML</opciones>
+      <opciones>Java</opciones>
+      <opciones>C++</opciones>
+    </preguntas>
+    <preguntas
+        enunciado="El sistema binario utiliza los dígitos 1 y 2."
+        respuestaCorrecta="Falso"/>
+    <preguntas
+        enunciado="¿Qué término se usa para describir un error en el código de un programa?"
+        tipo="RESPUESTA_CORTA"
+        respuestaCorrecta="Un bug"/>
+  </paginas>
+  <paginas xsi:type="DataWeb:PaginaCreacion"
+      idPagina="crear_libro"
+      nombrePagina="Crear libro"
+      entidad="entidad_libro"/>
+  <paginas xsi:type="DataWeb:PaginaDetalle"
+      idPagina="ver_autor"
+      nombrePagina="Autor"
+      enlacerrss="//@enlaces.0"
+      enlacesPaginas="ver_autores"
+      entidad="entidad_autor"/>
+  <paginas xsi:type="DataWeb:PaginaIndice"
+      idPagina="ver_autores"
+      nombrePagina="Autores"
+      entidad="entidad_autor"
+      atributosAMostrar="//@entidades.1/@atributos.0 //@entidades.1/@atributos.1"/>
+  <paginas xsi:type="DataWeb:PaginaIndiceDetalle"
+      idPagina="ver_autores_detalle"
+      nombrePagina="Ver autores con detalle"
+      enlacesPaginas="ver_autores"
+      entidad="entidad_autor"
+      atributosAMostrar="//@entidades.1/@atributos.0"/>
+  <paginas xsi:type="DataWeb:PaginaResultados"
+      idPagina="resultados_cuestionario_1"
+      nombrePagina="Resultados cuestionario 1"
+      paginaencuestacuestionario="cuestionario_1"/>
+  <paginas xsi:type="DataWeb:PaginaEncuestaCuestionario"
+      idPagina="encuesta_1"
+      nombrePagina="Encuesta1"
+      paginaresultados="resultados_cuestionario_2">
+    <preguntas
+        enunciado="¿Vives en cáceres?"
+        respuestaCorrecta="Verdadero"/>
+    <preguntas
+        enunciado="¿Cómo vives?"
+        tipo="SELECCION"
+        respuestaCorrecta="Bien">
+      <opciones>Bien</opciones>
+      <opciones>Mal</opciones>
+    </preguntas>
+    <preguntas
+        enunciado="¿Dónde vives?"
+        tipo="RESPUESTA_CORTA"
+        respuestaCorrecta="A"/>
+  </paginas>
+  <paginas xsi:type="DataWeb:PaginaResultados"
+      idPagina="resultados_cuestionario_2"
+      nombrePagina="Resultados2"
+      paginaencuestacuestionario="encuesta_1"/>
+  <entidades
+      idEntidad="entidad_libro"
+      nombre="Libro"
+      paginas="crear_libro"
+      referencias="entidad_autor">
+    <atributos
+        nombre="Nombre"
+        tipo="STRING"/>
+    <atributos
+        nombre="Fecha"
+        tipo="STRING"/>
+  </entidades>
+  <entidades
+      idEntidad="entidad_autor"
+      nombre="Autor"
+      paginas="ver_autor ver_autores ver_autores_nombre ver_autores_detalle">
+    <atributos
+        nombre="nombreCompleto"
+        tipo="STRING"/>
+    <atributos
+        nombre="FechaNacimiento"/>
+  </entidades>
+  <roles nombre="UsuarioNormal"
+      paginasAccesibles="cuestionario_1"/>
+  <enlaces nombre="Twitter"
+      enlace="www.twitter.com"/>
+</DataWeb:Aplicacion>

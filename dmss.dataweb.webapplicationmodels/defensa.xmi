@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DataWeb:Aplicacion
+    xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:DataWeb="http://example.org/DataWeb"
+    idApp="Defensa"
+    nombre="Defensa">
+  <paginas xsi:type="DataWeb:PaginaInicio"
+      idPagina="PaginaInicio"
+      nombrePagina="PaginaInicio"/>
+  <paginas xsi:type="DataWeb:PaginaIndiceExtendido"
+      idPagina="IndiceExtendidoTitulo"
+      nombrePagina="IndiceExtendidoTitulo"
+      entidad="Titulo"
+      atributosAMostrar="//@entidades.0/@atributos.2"
+      instanciasPorPagina="2"
+      atributoFiltro="//@entidades.0/@atributos.2"/>
+  <paginas xsi:type="DataWeb:PaginaCreacion"
+      idPagina="CrearTitulo"
+      nombrePagina="CreatTitulo"
+      entidad="Titulo"/>
+  <paginas xsi:type="DataWeb:PaginaDetalle"
+      idPagina="DetalleTitulo"
+      nombrePagina="DetalleTitulo"
+      entidad="Titulo"/>
+  <paginas xsi:type="DataWeb:PaginaBorrado"
+      idPagina="BorrarTitulo"
+      nombrePagina="BorrarTitulo"
+      entidad="Titulo"/>
+  <paginas xsi:type="DataWeb:PaginaCRUDUnica"
+      idPagina="CRUDAsignatura"
+      nombrePagina="CRUDAsignatura"
+      enlacerrss="//@enlaces.0"
+      entidad="Asignatura"/>
+  <paginas xsi:type="DataWeb:PaginaDetalle"
+      idPagina="DetalleAlumno"
+      nombrePagina="DetalleAlumno"
+      entidad="Alumno"/>
+  <paginas xsi:type="DataWeb:PaginaCRUDUnica"
+      idPagina="CRUDMatricula"
+      nombrePagina="CRUDMatricula"
+      enlacerrss="//@enlaces.1"
+      entidad="Matricula"/>
+  <paginas xsi:type="DataWeb:PaginaEncuestaCuestionario"
+      idPagina="SatisfaccionConElTitulo"
+      nombrePagina="Encuesta de satisfacción con el título">
+    <preguntas
+        enunciado="¿En qué titulación estás matriculad@?"
+        tipo="SELECCION"
+        respuestaCorrecta="">
+      <opciones>I.Software</opciones>
+      <opciones>I.Computadores</opciones>
+      <opciones>I.TecnologiasInformacion</opciones>
+    </preguntas>
+    <preguntas
+        enunciado="¿Volverías a matricularte de tu titulación?"/>
+  </paginas>
+  <paginas xsi:type="DataWeb:PaginaEncuestaCuestionario"
+      idPagina="LenguajesProgramacion"
+      nombrePagina="Cuestionario de lenguajes de programación"
+      esCuestionario="true"
+      paginaresultados="resultadosCuestionariosLenguajes">
+    <preguntas
+        enunciado="¿Cuál es el lenguaje de programación más utilizado en prácticas?"
+        tipo="RESPUESTA_CORTA"
+        respuestaCorrecta="Java">
+      <opciones>C++</opciones>
+      <opciones>Java</opciones>
+      <opciones>Python</opciones>
+    </preguntas>
+  </paginas>
+  <paginas xsi:type="DataWeb:PaginaIndice"
+      idPagina="IndiceAlumno"
+      nombrePagina="IndiceAlumno"
+      entidad="Alumno"/>
+  <paginas xsi:type="DataWeb:PaginaResultados"
+      idPagina="resultadosCuestionariosLenguajes"
+      nombrePagina="Resultados Cuestionario de Lenguajes"
+      paginaencuestacuestionario="LenguajesProgramacion"/>
+  <entidades
+      idEntidad="Titulo"
+      nombre="Título"
+      paginas="IndiceExtendidoTitulo CrearTitulo DetalleTitulo BorrarTitulo">
+    <atributos
+        nombre="nombre"
+        tipo="STRING"/>
+    <atributos
+        nombre="créditos"/>
+    <atributos
+        nombre="campo_cientifico"
+        tipo="STRING"/>
+  </entidades>
+  <entidades
+      idEntidad="Asignatura"
+      nombre="Asignatura"
+      paginas="CRUDAsignatura"
+      referencias="Titulo">
+    <atributos
+        nombre="nombre"
+        tipo="STRING"/>
+    <atributos
+        nombre="semestre"/>
+    <atributos
+        nombre="obligatoria"
+        tipo="BOOLEAN"/>
+  </entidades>
+  <entidades
+      idEntidad="Alumno"
+      nombre="Alumno"
+      paginas="DetalleAlumno IndiceAlumno">
+    <atributos
+        nombre="nombre"
+        tipo="STRING"/>
+    <atributos
+        nombre="edad"/>
+    <atributos
+        nombre="evaluacionContinua"
+        tipo="BOOLEAN"/>
+  </entidades>
+  <entidades
+      idEntidad="Matricula"
+      nombre="Matricula"
+      paginas="CRUDMatricula"
+      referencias="Asignatura Alumno"/>
+  <roles nombre="Director"
+      paginasAccesibles="CrearTitulo DetalleTitulo BorrarTitulo IndiceExtendidoTitulo CRUDAsignatura CRUDMatricula"/>
+  <roles nombre="Alumno"
+      paginasAccesibles="CRUDAsignatura SatisfaccionConElTitulo LenguajesProgramacion"/>
+  <enlaces nombre="Twitter"
+      enlace="https://twitter.com"/>
+  <enlaces nombre="UNEX"
+      enlace="http://www.unex.es/"/>
+</DataWeb:Aplicacion>

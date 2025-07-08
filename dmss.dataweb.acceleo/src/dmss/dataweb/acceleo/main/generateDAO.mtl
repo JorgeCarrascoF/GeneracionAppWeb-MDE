@@ -1,0 +1,27 @@
+[module generateDAO('http://example.org/DataWeb')]
+
+[template public generateDAO(aplicacion : Aplicacion)]
+	[for(entidad : Entidad | aplicacion.entidades)]
+		[generateEntityDAO(aplicacion, entidad)/]
+	[/for]
+[/template]
+
+[template private generateEntityDAO(aplicacion : Aplicacion, entidad : Entidad)]
+[let class : String = entidad.idEntidad.toUpperFirst()]
+[file(aplicacion.nombre.concat('/desktop/src/dao/dao' + class + '.java'), false, 'UTF-8')]
+package dao;
+import model.[class/];
+import java.util.List;
+
+
+
+public interface dao[class/] {
+	List<[class/]> getAll[class/]s();
+	[class/] get[class/]ById(int id);
+	void insert[class/]([class/] [class.toLowerCase()/]);
+	void update[class/]([class/] [class.toLowerCase()/]);
+	void delete[class/]([class/] [class.toLowerCase()/]);
+}
+[/file]
+[/let]
+[/template]

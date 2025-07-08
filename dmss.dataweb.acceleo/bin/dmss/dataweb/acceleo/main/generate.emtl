@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xmi:XMI xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:mtl="http://www.eclipse.org/acceleo/mtl/3.0" xmlns:ocl.ecore="http://www.eclipse.org/ocl/1.1.0/Ecore">
+  <mtl:Module name="generate" nsURI="dmss::dataweb::acceleo::main::generate" endHeaderPosition="97">
+    <input>
+      <takesTypesFrom href="http://example.org/DataWeb#/"/>
+    </input>
+    <imports href="generateWeb.emtl#/0"/>
+    <imports href="generateDesktop.emtl#/0"/>
+    <imports href="generateDatabase.emtl#/0"/>
+    <imports href="generateDAO.emtl#/0"/>
+    <ownedModuleElement xsi:type="mtl:Template" name="generateAplicacion" visibility="Public" main="true">
+      <body xsi:type="ocl.ecore:StringLiteralExp" stringSymbol="&#x9;"/>
+      <body xsi:type="mtl:TemplateInvocation">
+        <eType xsi:type="ocl.ecore:PrimitiveType" href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/String"/>
+        <definition href="generateWeb.emtl#/0/generateWebApp"/>
+        <argument xsi:type="ocl.ecore:VariableExp" name="anAplicacion" referredVariable="/0/generateAplicacion/anAplicacion">
+          <eType xsi:type="ecore:EClass" href="http://example.org/DataWeb#//Aplicacion"/>
+        </argument>
+      </body>
+      <body xsi:type="ocl.ecore:StringLiteralExp" stringSymbol="&#xA;&#x9;"/>
+      <body xsi:type="mtl:TemplateInvocation">
+        <eType xsi:type="ocl.ecore:PrimitiveType" href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/String"/>
+        <definition href="generateDesktop.emtl#/0/generateDesktopApp"/>
+        <argument xsi:type="ocl.ecore:VariableExp" name="anAplicacion" referredVariable="/0/generateAplicacion/anAplicacion">
+          <eType xsi:type="ecore:EClass" href="http://example.org/DataWeb#//Aplicacion"/>
+        </argument>
+      </body>
+      <body xsi:type="ocl.ecore:StringLiteralExp" stringSymbol="&#xA;&#x9;"/>
+      <body xsi:type="mtl:TemplateInvocation">
+        <eType xsi:type="ocl.ecore:PrimitiveType" href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/String"/>
+        <definition href="generateDatabase.emtl#/0/generateDatabase"/>
+        <argument xsi:type="ocl.ecore:VariableExp" name="anAplicacion" referredVariable="/0/generateAplicacion/anAplicacion">
+          <eType xsi:type="ecore:EClass" href="http://example.org/DataWeb#//Aplicacion"/>
+        </argument>
+      </body>
+      <body xsi:type="ocl.ecore:StringLiteralExp" stringSymbol="&#xA;&#x9;"/>
+      <body xsi:type="mtl:TemplateInvocation">
+        <eType xsi:type="ocl.ecore:PrimitiveType" href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/String"/>
+        <definition href="generateDAO.emtl#/0/generateDAO"/>
+        <argument xsi:type="ocl.ecore:VariableExp" name="anAplicacion" referredVariable="/0/generateAplicacion/anAplicacion">
+          <eType xsi:type="ecore:EClass" href="http://example.org/DataWeb#//Aplicacion"/>
+        </argument>
+      </body>
+      <parameter name="anAplicacion">
+        <eType xsi:type="ecore:EClass" href="http://example.org/DataWeb#//Aplicacion"/>
+      </parameter>
+    </ownedModuleElement>
+  </mtl:Module>
+  <ecore:EPackage name="additions">
+    <eClassifiers xsi:type="ecore:EClass" name="oclstdlib_String_Class">
+      <eAnnotations source="http://www.eclipse.org/ocl/1.1.0/OCL">
+        <references href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/String"/>
+      </eAnnotations>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="oclstdlib_Integer_Class">
+      <eAnnotations source="http://www.eclipse.org/ocl/1.1.0/OCL">
+        <references href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/Integer"/>
+      </eAnnotations>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="oclstdlib_Real_Class">
+      <eAnnotations source="http://www.eclipse.org/ocl/1.1.0/OCL">
+        <references href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/Real"/>
+      </eAnnotations>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="ecore_EObject_Class">
+      <eAnnotations source="http://www.eclipse.org/ocl/1.1.0/OCL">
+        <references href="http://www.eclipse.org/emf/2002/Ecore#//EObject"/>
+      </eAnnotations>
+      <eOperations name="generateAplicacion">
+        <eAnnotations source="http://www.eclipse.org/ocl/1.1.0/OCL">
+          <contents xsi:type="ocl.ecore:Constraint"/>
+        </eAnnotations>
+        <eAnnotations source="MTL" references="/0/generateAplicacion"/>
+        <eType xsi:type="ocl.ecore:PrimitiveType" href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/String"/>
+        <eParameters name="anAplicacion">
+          <eType xsi:type="ecore:EClass" href="http://example.org/DataWeb#//Aplicacion"/>
+        </eParameters>
+      </eOperations>
+      <eOperations name="generateWebApp">
+        <eAnnotations source="http://www.eclipse.org/ocl/1.1.0/OCL">
+          <contents xsi:type="ocl.ecore:Constraint"/>
+        </eAnnotations>
+        <eAnnotations source="MTL">
+          <references href="generateWeb.emtl#/0/generateWebApp"/>
+        </eAnnotations>
+        <eType xsi:type="ocl.ecore:PrimitiveType" href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/String"/>
+        <eParameters name="anAplicacion">
+          <eType xsi:type="ecore:EClass" href="http://example.org/DataWeb#//Aplicacion"/>
+        </eParameters>
+      </eOperations>
+      <eOperations name="generateDesktopApp">
+        <eAnnotations source="http://www.eclipse.org/ocl/1.1.0/OCL">
+          <contents xsi:type="ocl.ecore:Constraint"/>
+        </eAnnotations>
+        <eAnnotations source="MTL">
+          <references href="generateDesktop.emtl#/0/generateDesktopApp"/>
+        </eAnnotations>
+        <eType xsi:type="ocl.ecore:PrimitiveType" href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/String"/>
+        <eParameters name="anAplicacion">
+          <eType xsi:type="ecore:EClass" href="http://example.org/DataWeb#//Aplicacion"/>
+        </eParameters>
+      </eOperations>
+      <eOperations name="generateDatabase">
+        <eAnnotations source="http://www.eclipse.org/ocl/1.1.0/OCL">
+          <contents xsi:type="ocl.ecore:Constraint"/>
+        </eAnnotations>
+        <eAnnotations source="MTL">
+          <references href="generateDatabase.emtl#/0/generateDatabase"/>
+        </eAnnotations>
+        <eType xsi:type="ocl.ecore:PrimitiveType" href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/String"/>
+        <eParameters name="aplicacion">
+          <eType xsi:type="ecore:EClass" href="http://example.org/DataWeb#//Aplicacion"/>
+        </eParameters>
+      </eOperations>
+      <eOperations name="generateDAO">
+        <eAnnotations source="http://www.eclipse.org/ocl/1.1.0/OCL">
+          <contents xsi:type="ocl.ecore:Constraint"/>
+        </eAnnotations>
+        <eAnnotations source="MTL">
+          <references href="generateDAO.emtl#/0/generateDAO"/>
+        </eAnnotations>
+        <eType xsi:type="ocl.ecore:PrimitiveType" href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/String"/>
+        <eParameters name="aplicacion">
+          <eType xsi:type="ecore:EClass" href="http://example.org/DataWeb#//Aplicacion"/>
+        </eParameters>
+      </eOperations>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="oclstdlib_OclAny_Class">
+      <eAnnotations source="http://www.eclipse.org/ocl/1.1.0/OCL">
+        <references href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/OclAny"/>
+      </eAnnotations>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="oclstdlib_Collection(T)_Class">
+      <eAnnotations source="http://www.eclipse.org/ocl/1.1.0/OCL">
+        <references href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/Collection(T)"/>
+      </eAnnotations>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="oclstdlib_Sequence(T)_Class">
+      <eAnnotations source="http://www.eclipse.org/ocl/1.1.0/OCL">
+        <references href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/Sequence(T)"/>
+      </eAnnotations>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="oclstdlib_OrderedSet(T)_Class">
+      <eAnnotations source="http://www.eclipse.org/ocl/1.1.0/OCL">
+        <references href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/OrderedSet(T)"/>
+      </eAnnotations>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="DataWeb_Aplicacion_Class">
+      <eAnnotations source="http://www.eclipse.org/ocl/1.1.0/OCL">
+        <references href="http://example.org/DataWeb#//Aplicacion"/>
+      </eAnnotations>
+    </eClassifiers>
+  </ecore:EPackage>
+  <ocl.ecore:Variable name="self">
+    <eType xsi:type="ecore:EClass" href="http://www.eclipse.org/emf/2002/Ecore#//EObject"/>
+  </ocl.ecore:Variable>
+  <ocl.ecore:Variable name="self">
+    <eType xsi:type="ecore:EClass" href="http://example.org/DataWeb#//Aplicacion"/>
+  </ocl.ecore:Variable>
+  <ocl.ecore:Variable name="self">
+    <eType xsi:type="ocl.ecore:PrimitiveType" href="http://www.eclipse.org/ocl/1.1.0/oclstdlib.ecore#/0/String"/>
+  </ocl.ecore:Variable>
+  <ocl.ecore:Variable name="self">
+    <eType xsi:type="ecore:EClass" href="http://example.org/DataWeb#//Aplicacion"/>
+  </ocl.ecore:Variable>
+  <ocl.ecore:Variable name="self">
+    <eType xsi:type="ecore:EClass" href="http://example.org/DataWeb#//Aplicacion"/>
+  </ocl.ecore:Variable>
+  <ocl.ecore:Variable name="self">
+    <eType xsi:type="ecore:EClass" href="http://example.org/DataWeb#//Aplicacion"/>
+  </ocl.ecore:Variable>
+  <ocl.ecore:Variable name="self">
+    <eType xsi:type="ecore:EClass" href="http://example.org/DataWeb#//Aplicacion"/>
+  </ocl.ecore:Variable>
+  <ocl.ecore:Variable name="self">
+    <eType xsi:type="ecore:EClass" href="http://example.org/DataWeb#//Aplicacion"/>
+  </ocl.ecore:Variable>
+  <ocl.ecore:Variable name="self">
+    <eType xsi:type="ecore:EClass" href="http://www.eclipse.org/emf/2002/Ecore#//EObject"/>
+  </ocl.ecore:Variable>
+  <ecore:EAnnotation source="positions">
+    <eAnnotations source="positions.0" references="/0/generateAplicacion">
+      <details key="start" value="266"/>
+      <details key="end" value="493"/>
+      <details key="line" value="7"/>
+    </eAnnotations>
+    <eAnnotations source="positions.1" references="/0/generateAplicacion/%">
+      <details key="start" value="347"/>
+      <details key="end" value="348"/>
+      <details key="line" value="9"/>
+    </eAnnotations>
+    <eAnnotations source="positions.2" references="/0/generateAplicacion/%.1">
+      <details key="start" value="349"/>
+      <details key="end" value="377"/>
+      <details key="line" value="0"/>
+    </eAnnotations>
+    <eAnnotations source="positions.3" references="/0/generateAplicacion/%.1/anAplicacion">
+      <details key="start" value="364"/>
+      <details key="end" value="376"/>
+      <details key="line" value="0"/>
+    </eAnnotations>
+    <eAnnotations source="positions.4" references="/0/generateAplicacion/%.2">
+      <details key="start" value="379"/>
+      <details key="end" value="381"/>
+      <details key="line" value="10"/>
+    </eAnnotations>
+    <eAnnotations source="positions.5" references="/0/generateAplicacion/%.3">
+      <details key="start" value="382"/>
+      <details key="end" value="414"/>
+      <details key="line" value="0"/>
+    </eAnnotations>
+    <eAnnotations source="positions.6" references="/0/generateAplicacion/%.3/anAplicacion">
+      <details key="start" value="401"/>
+      <details key="end" value="413"/>
+      <details key="line" value="0"/>
+    </eAnnotations>
+    <eAnnotations source="positions.7" references="/0/generateAplicacion/%.4">
+      <details key="start" value="416"/>
+      <details key="end" value="418"/>
+      <details key="line" value="11"/>
+    </eAnnotations>
+    <eAnnotations source="positions.8" references="/0/generateAplicacion/%.5">
+      <details key="start" value="419"/>
+      <details key="end" value="449"/>
+      <details key="line" value="0"/>
+    </eAnnotations>
+    <eAnnotations source="positions.9" references="/0/generateAplicacion/%.5/anAplicacion">
+      <details key="start" value="436"/>
+      <details key="end" value="448"/>
+      <details key="line" value="0"/>
+    </eAnnotations>
+    <eAnnotations source="positions.10" references="/0/generateAplicacion/%.6">
+      <details key="start" value="451"/>
+      <details key="end" value="453"/>
+      <details key="line" value="12"/>
+    </eAnnotations>
+    <eAnnotations source="positions.11" references="/0/generateAplicacion/%.7">
+      <details key="start" value="454"/>
+      <details key="end" value="479"/>
+      <details key="line" value="0"/>
+    </eAnnotations>
+    <eAnnotations source="positions.12" references="/0/generateAplicacion/%.7/anAplicacion">
+      <details key="start" value="466"/>
+      <details key="end" value="478"/>
+      <details key="line" value="0"/>
+    </eAnnotations>
+    <eAnnotations source="positions.13" references="/0/generateAplicacion/anAplicacion">
+      <details key="start" value="302"/>
+      <details key="end" value="327"/>
+      <details key="line" value="7"/>
+    </eAnnotations>
+  </ecore:EAnnotation>
+</xmi:XMI>
