@@ -72,10 +72,10 @@ La plantilla Acceleo recorre el modelo y genera archivos `.html` con estilos mod
 
 ## 🧪 Flujo de trabajo
 
-1. Modelado en Eclipse usando el editor GMF (`en Eclipse, click derecho en dmss.dataweb.diagram -> Run As -> Launch as Java Application`)
+1. Modelado en Eclipse usando el editor GMF (`en Eclipse, click derecho en dmss.dataweb.diagram → Run As → Launch as Java Application`)
 2. Creación de un modelo mediante las herramientas gráficas de modelado
-3. Validación del modelo (`abrir el archivo .diagram -> clic derecho en el elemento raíz → Validate`)
-4. Generación automática mediante Acceleo(`en Eclipse, click derecho en dmss.dataweb.acceleo/src/dataweb/acceleo/main/generate.mtl -> Run As -> Launch Acceleo Application`)
+3. Validación del modelo (`abrir el archivo .diagram → clic derecho en el elemento raíz → Validate`)
+4. Generación automática mediante Acceleo(`en Eclipse, click derecho en dmss.dataweb.acceleo/src/dataweb/acceleo/main/generate.mtl → Run As → Launch Acceleo Application`)
 5. Revisión o despliegue de los archivos HTML generados y de la aplicación de escritorio
 
 ---
